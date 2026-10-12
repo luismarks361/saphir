@@ -1,0 +1,15 @@
+{
+  "schnittstelle": 1,
+  "id": "beispiel",
+  "name": "Beispiel",
+  "version": "1.0.0",
+  "symbol": "puzzlepiece.extension",
+  "start": "plugin.py",
+  "takt": 10,
+  "andocken": ["kachel", "live", "hud"],
+  "prioritaet": 12,
+  "spalten": 1,
+  "einstellungen": [
+    { "schluessel": "ziel", "name": "Ziel", "typ": "text", "standard": "5" }
+  ]
+}

@@ -4,7 +4,9 @@ import SwiftUI
 struct WidgetKachel: Identifiable {
     let id: String
     /// Zu welcher Funktion sie gehoert. Ist die aus, erscheint sie nicht.
-    let funktion: Funktion
+    var funktion: Funktion? = nil
+    /// Oder zu welchem Plugin. Genau eines von beiden ist gesetzt.
+    var plugin: String? = nil
     let titel: String
     let symbol: String
     /// Wie breit sie im Raster liegt: 1 = halb, 2 = ganz.
@@ -12,6 +14,14 @@ struct WidgetKachel: Identifiable {
     /// Kleiner heisst weiter oben.
     var reihenfolge: Int = 0
     let inhalt: () -> AnyView
+
+    /// Ob ihre Funktion oder ihr Plugin an ist.
+    @MainActor
+    var istAn: Bool {
+        if let funktion { return Einstellungen.shared.istAn(funktion) }
+        if let plugin { return PluginVerwalter.shared.istAn(plugin) }
+        return false
+    }
 }
 
 /// Wo sich Widgets eintragen.
@@ -38,6 +48,6 @@ final class WidgetRegister: ObservableObject {
     }
 
     var sichtbare: [WidgetKachel] {
-        kacheln.filter { Einstellungen.shared.istAn($0.funktion) }
+        kacheln.filter(\.istAn)
     }
 }

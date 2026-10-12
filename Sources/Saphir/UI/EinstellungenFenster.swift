@@ -44,13 +44,14 @@ final class EinstellungenFenster: NSObject, NSWindowDelegate {
 }
 
 private enum Bereich: String, CaseIterable, Identifiable {
-    case allgemein, funktionen, agenten, deckel, freigaben, spotify, info
+    case allgemein, funktionen, erweiterungen, agenten, deckel, freigaben, spotify, info
     var id: String { rawValue }
 
     var name: String {
         switch self {
         case .allgemein: return "Allgemein"
         case .funktionen: return "Funktionen"
+        case .erweiterungen: return "Erweiterungen"
         case .agenten: return "Claude Code"
         case .deckel: return "Deckel zu"
         case .freigaben: return "Freigaben"
@@ -63,6 +64,7 @@ private enum Bereich: String, CaseIterable, Identifiable {
         switch self {
         case .allgemein: return "gearshape"
         case .funktionen: return "square.grid.2x2"
+        case .erweiterungen: return "puzzlepiece.extension"
         case .agenten: return "sparkle"
         case .deckel: return "laptopcomputer"
         case .freigaben: return "lock.shield"
@@ -95,6 +97,7 @@ struct EinstellungenAnsicht: View {
                     switch wahl.bereich {
                     case .allgemein: AllgemeinSeite()
                     case .funktionen: FunktionenSeite()
+                    case .erweiterungen: ErweiterungenSeite()
                     case .agenten: AgentenSeite()
                     case .deckel: DeckelSeite()
                     case .freigaben: FreigabenSeite()
