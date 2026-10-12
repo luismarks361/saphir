@@ -1,0 +1,30 @@
+# --- macOS ---
+.DS_Store
+.AppleDouble
+._*
+
+# --- Abhaengigkeiten (regenerierbar) ---
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# --- Build-Artefakte ---
+.build/
+dist/
+build/
+*.xcuserdatad
+DerivedData/
+
+# --- Zugangsdaten: NIE einchecken ---
+.env
+.env.*
+*.secrets-generated.txt
+.secrets-generated.txt
+
+# --- Laufzeit / Muell ---
+*.log
+.cache.json
+.~lock.*#
+.original/
