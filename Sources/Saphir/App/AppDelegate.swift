@@ -17,6 +17,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         // sofort abgeraeumt, nicht erst, wenn jemand die Kachel anfasst.
         DeckelDienst.shared.starte()
         hudVerdrahten()
+        // Nach der Verdrahtung: eine erste HUD-Meldung braucht schon ihr Ziel.
+        PluginVerwalter.shared.starte()
 
         // Bildschirmwahl und Funktionsschalter koennen die Insel umziehen oder
         // ihren Inhalt aendern; beides muss die Trefferflaeche nachfuehren.
@@ -55,6 +57,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
         AugenDienst.shared.zeige = { [weak self] anzeige in
             self?.notch.zeigeHud(anzeige, sekunden: 2)
+        }
+
+        PluginVerwalter.shared.zeigeHud = { [weak self] anzeige, sekunden in
+            self?.notch.zeigeHud(anzeige, sekunden: sekunden)
         }
 
         // Eine wartende Freigabe haelt eine Claude-Session an. Sie ist damit

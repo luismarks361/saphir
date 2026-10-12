@@ -40,6 +40,14 @@ keine Oberfläche) und eine Ladegrenze für den Akku (sie bräuchte einen Helfer
 Root-Rechten). Geplant, aber noch nicht gebaut: Helligkeits-Boost, Nearby Share,
 Menüleiste anpassen, Kurzbefehle.
 
+## Erweiterungen
+
+Eigene Anzeigen lassen sich ohne Eingriff in Saphir anbinden: ein Ordner unter
+`~/.saphir/plugins/` mit einer `plugin.json` und einem Skript in beliebiger Sprache. Das
+Skript antwortet auf stdout mit JSON, Saphir malt daraus eine Kachel, eine Anzeige neben
+der Kamera oder eine Meldung unter der Notch, in der eigenen Gestaltung. Beispiel und
+Schnittstelle: [`doku/plugins.md`](doku/plugins.md).
+
 ## Voraussetzungen
 
 - macOS 14.4 oder neuer (wegen des Prozess-Taps für den Pegel der Musikbalken)

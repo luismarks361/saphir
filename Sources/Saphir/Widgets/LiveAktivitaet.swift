@@ -77,7 +77,9 @@ struct LiveInhalt: Equatable {
 struct LiveAktivitaet: Identifiable, Equatable {
     let id: String
     /// Zu welcher Funktion sie gehoert. Ist die aus, verschwindet sie.
-    let funktion: Funktion
+    var funktion: Funktion? = nil
+    /// Oder zu welchem Plugin. Genau eines von beiden ist gesetzt.
+    var plugin: String? = nil
     /// Wer gewinnt, wenn mehrere gleichzeitig wollen. Groesser schlaegt kleiner.
     var prioritaet: Int = 0
     var links: LiveInhalt?
@@ -92,6 +94,14 @@ struct LiveAktivitaet: Identifiable, Equatable {
     /// sieht es nur auf dem echten Display. (Lehre aus Agent Island.)
     var ohrBreite: CGFloat {
         max(links?.breite ?? 0, rechts?.breite ?? 0)
+    }
+
+    /// Ob ihre Funktion oder ihr Plugin an ist.
+    @MainActor
+    var istAn: Bool {
+        if let funktion { return Einstellungen.shared.istAn(funktion) }
+        if let plugin { return PluginVerwalter.shared.istAn(plugin) }
+        return false
     }
 }
 
@@ -117,7 +127,7 @@ final class LiveAktivitaeten: ObservableObject {
 
     /// Die Aktivitaet, die gerade gezeigt wird.
     var vorne: LiveAktivitaet? {
-        alle.filter { Einstellungen.shared.istAn($0.funktion) }
+        alle.filter(\.istAn)
             .max { $0.prioritaet < $1.prioritaet }
     }
 
