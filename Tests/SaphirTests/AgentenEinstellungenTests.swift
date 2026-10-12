@@ -128,6 +128,20 @@ final class AgentenEinstellungenTests: XCTestCase {
         XCTAssertEqual(passende.count, 1, "genau eine Sicherung mit dem Stand vor Saphir")
     }
 
+    /// Die Sicherung ist eine Kopie der `settings.json`, und die kann Zugangsdaten
+    /// enthalten. Sie gehoert nur dem Nutzer, egal wie die Umask steht.
+    func testSicherungIstNurFuerDenNutzerLesbar() throws {
+        _ = try AgentenTestUmgebung.neueSettings(inhalt: #"{"model":"opus"}"#)
+        try HookInstaller.install()
+
+        let sicherungen = (try FileManager.default.contentsOfDirectory(
+            at: Ablage.ordner, includingPropertiesForKeys: nil))
+            .filter { $0.lastPathComponent.hasPrefix("settings-backup-") }
+        let sicherung = try XCTUnwrap(sicherungen.first)
+        let modus = try XCTUnwrap(FileManager.default.attributesOfItem(atPath: sicherung.path)[.posixPermissions] as? NSNumber)
+        XCTAssertEqual(modus.intValue, 0o600)
+    }
+
     // MARK: - Statuszeile
 
     func testFremdeStatuszeileWirdWeitergereichtUndKommtZurueck() throws {
