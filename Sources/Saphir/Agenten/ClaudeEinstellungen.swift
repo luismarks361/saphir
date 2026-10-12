@@ -73,6 +73,8 @@ enum ClaudeEinstellungen {
             .replacingOccurrences(of: ":", with: "-")
         let ziel = Ablage.ordner.appendingPathComponent("\(praefix)\(stempel).json")
         try? inhalt.write(to: ziel, options: .atomic)
+        // Eine Kopie der settings.json kann Zugangsdaten enthalten: nur fuer den Nutzer.
+        try? FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: ziel.path)
         raeumeAuf()
     }
 
