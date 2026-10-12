@@ -107,6 +107,7 @@ final class NotchFenster {
     }
 
     private func mausBewegt(zieht: Bool = false) {
+        frageAbgleichen()
         let drin = heisseFlaeche.contains(NSEvent.mouseLocation)
         // Klicks nur annehmen, solange der Zeiger wirklich ueber uns steht.
         if panel.ignoresMouseEvents == drin {
@@ -125,12 +126,11 @@ final class NotchFenster {
         zustand.istUeberfahren = drin
         if drin {
             zuklappenArbeit?.cancel()
-            // Ein Angebot (Nachtmodus) wartet auf einen Klick auf Ja oder Nein. Die
-            // Zeile mit den Knoepfen steht unter der Notch, der Zeiger muss also
-            // hindurch. Klappte die Insel dabei auf, ersetzte die grosse Flaeche
-            // die Zeile, noch bevor der Zeiger die Knoepfe erreicht hat.
-            let angebotSteht = zustand.hud?.angebot == true
-            if Einstellungen.shared.beiHoverOeffnen, !angebotSteht { klappeAuf() }
+            // Ein Angebot (Nachtmodus) oder eine Frage wartet auf einen Klick. Die
+            // Knoepfe stehen unter der Notch, der Zeiger muss also hindurch.
+            // Klappte die Insel dabei auf, ersetzte die grosse Flaeche sie, noch
+            // bevor der Zeiger die Knoepfe erreicht hat (siehe `wartetAufKlick`).
+            if Einstellungen.shared.beiHoverOeffnen, !zustand.wartetAufKlick { klappeAuf() }
         } else {
             klappeZuWennRuhig()
         }
@@ -155,15 +155,34 @@ final class NotchFenster {
         klappeAuf()
     }
 
-    /// Eine anstehende Freigabe draengt sich vor: die Insel geht von selbst auf
-    /// und schlaegt die Sessions auf. Angeheftet wird sie dabei nicht — sie soll
-    /// von allein wieder zugehen, sobald entschieden ist.
+    /// Eine anstehende Freigabe draengt sich vor. Sie braucht nur ihre Karte, also
+    /// geht unter der Notch allein das Frage-Panel auf, ohne Reiter und Sessions
+    /// (`InselZustand.zeigeFrage`). Angeheftet wird nichts, es soll von allein
+    /// wieder zugehen, sobald entschieden ist.
+    ///
+    /// Wo kein Frage-Panel passt, bleibt es beim Alten: die Insel geht auf und
+    /// schlaegt die Sessions auf.
     func zeigeFreigabe() {
         hudArbeit?.cancel()
         zustand.hud = nil
-        zustand.seite = .agenten
-        klappeAufErzwungen()
+        if zustand.zeigeFrage(freigabeSteht: AgentDienst.shared.hatFreigabe) {
+            zuklappenArbeit?.cancel()
+            // Wie bei der offenen Insel: faellt das Mausereignis aus (Vollbild),
+            // soll der Waechter den Zeiger trotzdem finden.
+            starteWaechter()
+        } else {
+            zustand.seite = .agenten
+            klappeAufErzwungen()
+        }
         flaecheNachfuehren()
+    }
+
+    /// Laeuft bei jeder Mausbewegung mit, damit auch ein Weg ohne Rueckruf (Agenten
+    /// abgeschaltet) kein leeres Frage-Panel stehen laesst. Den Grund dafuer nennt
+    /// `InselZustand.frageAbgleichen`.
+    private func frageAbgleichen() {
+        guard zustand.frageAbgleichen(freigabeSteht: AgentDienst.shared.hatFreigabe) else { return }
+        if !zustand.istOffen { stoppeWaechter() }
     }
 
     /// Kurze Anzeige unter der Notch, die sich selbst wieder schliesst.
@@ -194,6 +213,7 @@ final class NotchFenster {
         zuklappenArbeit?.cancel()
         hudArbeit?.cancel()
         zustand.hud = nil
+        zustand.zeigtFrage = false
         zustand.istUeberfahren = false
         zustand.istAngeheftet = false
         zustand.istOffen = false

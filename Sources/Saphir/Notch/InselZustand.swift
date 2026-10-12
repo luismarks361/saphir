@@ -52,8 +52,23 @@ final class InselZustand: ObservableObject {
 
     @Published var hud: HudAnzeige?
 
+    /// Eine Freigabe wartet, und die Insel zeigt nur ihre Karte: kein Reiter, keine
+    /// Session-Liste. Der dritte Zustand neben „offen“ und „HUD“; die offene
+    /// Flaeche bleibt dafuer unangetastet. Ist die Insel zugleich offen, liegt die
+    /// volle Flaeche darueber (siehe `zielGroesse`).
+    @Published var zeigtFrage: Bool = false
+    /// Hoehe der Karte samt Rand unter der Notch, vom Inhalt selbst gemeldet. Der
+    /// Startwert ist eine einzeilige Freigabe (Ablehnen, Immer, Erlauben), damit
+    /// die Insel nicht erst klein aufgeht und dann nachwaechst.
+    @Published var hoeheFrage: CGFloat = 92
+
     /// Hoehe der HUD-Zeile unterhalb der Notch: Rand 12, Inhalt 24, Rand 12.
     static let hudZeilenHoehe: CGFloat = 48
+
+    /// Breite des Frage-Panels. Schmaler als die offene Flaeche, die den Platz der
+    /// Reiter braucht, aber breit genug, dass zwei Antworten je Zeile noch ganz
+    /// dastehen (`WrapZeile`).
+    static let breiteFrage: CGFloat = 440
 
     var groesseOffen: CGSize {
         // Breite: so schmal wie moeglich. Links neben der Notch muessen alle
@@ -75,6 +90,14 @@ final class InselZustand: ObservableObject {
                height: geometrie.notchHoehe + Self.hudZeilenHoehe)
     }
 
+    var groesseFrage: CGSize {
+        // Schmaler als die Notch darf es nie werden (wie beim HUD). Die Hoehe
+        // deckelt wie die offene Flaeche: eine Karte, die darueber hinausgeht,
+        // laeuft nicht aus dem Fenster.
+        CGSize(width: max(geometrie.notchBreite + 40, Self.breiteFrage),
+               height: min(geometrie.notchHoehe + hoeheFrage, NotchGeometrie.maxHoeheOffen))
+    }
+
     /// Wie hoch die Seite unter der Notch gezeichnet wird.
     var hoeheInhalt: CGFloat { groesseOffen.height - geometrie.notchHoehe }
 
@@ -87,15 +110,52 @@ final class InselZustand: ObservableObject {
     }
 
     /// Die Groesse, in der die Insel gerade gezeichnet werden soll.
+    ///
+    /// Die Reihenfolge ist die Wertigkeit: die offene Flaeche schlaegt alles, dann
+    /// kommt die Frage, dann die kurze HUD-Zeile. Eine Meldung darf die Frage
+    /// nicht verdraengen, sonst waeren die Knoepfe weg und die Session haengt.
     var zielGroesse: CGSize {
         if istOffen { return groesseOffen }
+        if zeigtFrage { return groesseFrage }
         if hud != nil { return groesseHud }
         return groesseEingeklappt
     }
 
+    /// Unter der Notch steht eine Frage oder eine HUD-Zeile, die Insel ist aber
+    /// nicht offen. Beide teilen sich Rundung, Kehle und Feder.
+    var istKompakt: Bool { zeigtFrage || hud != nil }
+
+    /// Ein Angebot (Nachtmodus) oder eine Frage wartet auf einen Klick. Die Knoepfe
+    /// stehen unter der Notch, der Zeiger muss also hindurch: klappte die Insel
+    /// dabei auf, ersetzte die grosse Flaeche die Karte, noch bevor der Zeiger die
+    /// Knoepfe erreicht hat.
+    var wartetAufKlick: Bool { hud?.angebot == true || zeigtFrage }
+
     /// Nichts zu zeigen: die Notch soll unberuehrt aussehen.
     var istStumm: Bool {
-        !istOffen && hud == nil && breiteLinks == 0 && breiteRechts == 0
+        !istOffen && !istKompakt && breiteLinks == 0 && breiteRechts == 0
+    }
+
+    // MARK: - Frage-Panel
+
+    /// Eine Freigabe ist angekommen. Wahr, wenn dafuer das Frage-Panel aufgeht;
+    /// falsch, wenn der Aufrufer die Sessions aufschlagen soll: entweder steht gar
+    /// keine Frage an (`kurzZeigen`: Aufgabe fertig), oder die Insel ist schon offen,
+    /// weil Luis sie selbst aufgemacht hat. Dort steht die Karte ganz oben, und
+    /// alles bleibt, wie es war.
+    func zeigeFrage(freigabeSteht: Bool) -> Bool {
+        guard freigabeSteht, !istOffen else { return false }
+        zeigtFrage = true
+        return true
+    }
+
+    /// Das Frage-Panel besteht nur aus der Karte der Freigabe. Ist sie weg, bliebe
+    /// ein leerer Streifen; deshalb geht das Panel mit ihr, auch wenn die Maus noch
+    /// darueber steht. Wahr, wenn es dadurch gerade gegangen ist.
+    func frageAbgleichen(freigabeSteht: Bool) -> Bool {
+        guard zeigtFrage, !freigabeSteht else { return false }
+        zeigtFrage = false
+        return true
     }
 }
 
@@ -179,6 +239,16 @@ struct BreiteRechtsKey: PreferenceKey {
 /// auch Kinder ein, die gar nichts melden, und deren Standardwert ist null. Bei
 /// einem Hintergrund als Messfuehler kam so am Ende immer null heraus.
 struct HoeheOffenKey: PreferenceKey {
+    static let defaultValue: CGFloat = 0
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = max(value, nextValue())
+    }
+}
+
+/// Dasselbe fuer das Frage-Panel, mit derselben Regel: die groesste Meldung
+/// gewinnt. Ein eigener Schluessel, damit die beiden Flaechen sich beim
+/// Ueberblenden nicht gegenseitig die Hoehe zuschreiben.
+struct HoeheFrageKey: PreferenceKey {
     static let defaultValue: CGFloat = 0
     static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
         value = max(value, nextValue())
