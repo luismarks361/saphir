@@ -1,9 +1,9 @@
 import SwiftUI
 
-/// Die Insel selbst: eine Form, die zwischen eingeklappter Leiste, HUD-Zeile und
-/// offener Flaeche wandert.
+/// Die Insel selbst: eine Form, die zwischen eingeklappter Leiste, HUD-Zeile,
+/// Frage-Panel und offener Flaeche wandert.
 ///
-/// Bewusst *eine* Ansicht statt drei mit Uebergaengen — nur so liest sich das
+/// Bewusst *eine* Ansicht statt vier mit Uebergaengen. Nur so liest sich das
 /// Auf- und Zuklappen als eine durchgehende Bewegung.
 struct InselWurzel: View {
     @ObservedObject var zustand: InselZustand
@@ -18,18 +18,20 @@ struct InselWurzel: View {
     /// Rand im App-Inhalt. Also weg damit.
     private var schattenStaerke: CGFloat {
         if zustand.istStumm { return 0 }
-        let passtInDieNotch = !zustand.istOffen && zustand.hud == nil
+        let passtInDieNotch = !zustand.istOffen && !zustand.istKompakt
         return passtInDieNotch && !zustand.menueleisteSichtbar ? 0 : 1
     }
 
+    /// Das Frage-Panel hat dieselbe Rundung wie die HUD-Zeile: beide sind eine
+    /// kleine Flaeche unter der Notch, keine aufgeklappte Insel.
     private var radius: CGFloat {
         if zustand.istOffen { return InselMasse.radiusOffen }
-        if zustand.hud != nil { return InselMasse.radiusHud(zustand.geometrie.screen) }
+        if zustand.istKompakt { return InselMasse.radiusHud(zustand.geometrie.screen) }
         return InselMasse.radiusEingeklappt(zustand.geometrie.screen)
     }
 
     private var kehle: CGFloat {
-        zustand.istOffen ? 9 : zustand.hud != nil ? 7 : 6
+        zustand.istOffen ? 9 : zustand.istKompakt ? 7 : 6
     }
 
     /// Aufwaerts darf die Feder ueberschwingen, abwaerts nicht: Eingeklappt ist
@@ -38,7 +40,7 @@ struct InselWurzel: View {
     /// echte Notch blitzt darunter hervor. Die Zuklapp-Feder (Daempfung 0,98)
     /// laeuft aus, ohne die Zielgroesse zu unterschreiten.
     private var groessenBewegung: Animation {
-        zustand.istOffen || zustand.hud != nil ? InselBewegung.groesse : InselBewegung.zuklappen
+        zustand.istOffen || zustand.istKompakt ? InselBewegung.groesse : InselBewegung.zuklappen
     }
 
     var body: some View {
@@ -84,6 +86,10 @@ struct InselWurzel: View {
             if zustand.istOffen {
                 OffeneFlaeche(zustand: zustand)
                     .transition(.opacity)
+            } else if zustand.zeigtFrage {
+                // Vor dem HUD: eine Meldung darf die Frage nicht verdraengen.
+                FragePanel(zustand: zustand)
+                    .transition(.opacity)
             } else if let hud = zustand.hud {
                 HudLeiste(anzeige: hud, zustand: zustand)
                     .transition(.opacity)
@@ -93,6 +99,7 @@ struct InselWurzel: View {
             }
         }
         .animation(InselBewegung.inhalt, value: zustand.istOffen)
+        .animation(InselBewegung.inhalt, value: zustand.zeigtFrage)
         .animation(InselBewegung.inhalt, value: zustand.hud)
     }
 }

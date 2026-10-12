@@ -189,6 +189,46 @@ private struct Freigabekarte: View {
     }
 }
 
+/// Nur die Frage: dieselbe Karte wie oben in den Sessions, aber allein unter der
+/// Notch, ohne Reiter und ohne Session-Liste.
+///
+/// Gezeigt wird immer die eine Freigabe, die gerade dran ist. Warten mehrere, rueckt
+/// die naechste nach, sobald entschieden ist; das Panel bleibt dabei stehen. Die
+/// Karte selbst ist unveraendert, damit Knoepfe und Quittung an beiden Orten
+/// dasselbe tun.
+struct FragePanel: View {
+    @ObservedObject var zustand: InselZustand
+    @ObservedObject private var dienst = AgentDienst.shared
+
+    var body: some View {
+        VStack(spacing: 0) {
+            // Die Kamera bleibt frei, wie bei der HUD-Zeile.
+            Color.clear.frame(height: zustand.geometrie.notchHoehe)
+
+            if let wartend = dienst.offeneFreigabe, let freigabe = wartend.freigabe {
+                Freigabekarte(session: wartend, freigabe: freigabe)
+                    .padding(.horizontal, 14)
+                    // Wie unten in der offenen Flaeche: 10 Rand, damit die
+                    // Rundung der Insel die Karte nicht anschneidet.
+                    .padding(.bottom, 10)
+                    // Sonst misst sich die Karte in der Hoehe, die die Insel ihr
+                    // gerade laesst, und meldet sie zurueck (siehe OffeneFlaeche).
+                    .fixedSize(horizontal: false, vertical: true)
+                    .background(GeometryReader { geo in
+                        Color.clear.preference(key: HoeheFrageKey.self, value: geo.size.height)
+                    })
+            }
+        }
+        .foregroundStyle(.white)
+        .onPreferenceChange(HoeheFrageKey.self) { hoehe in
+            // Null heisst: die Karte ist weg und das Panel geht gleich zu. Den
+            // letzten echten Wert behalten, sonst faengt das naechste Panel klein an.
+            guard hoehe > 0 else { return }
+            Task { @MainActor in zustand.hoeheFrage = hoehe }
+        }
+    }
+}
+
 /// Ablehnen, Immer, Erlauben.
 private struct Wahl: View {
     let session: AgentSession

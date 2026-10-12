@@ -62,9 +62,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         AgentDienst.shared.freigabeKamAn = { [weak self] in
             self?.notch.zeigeFreigabe()
         }
-        // Nach der Entscheidung noch einen Moment stehen lassen: die Quittung
-        // am Knopf soll man gesehen haben, bevor die Insel zugeht.
+        // Das Frage-Panel besteht nur aus der Karte und geht mit ihr zu; die
+        // Quittung am Knopf hat der Dienst vorher schon stehen lassen. Der
+        // Abgleich passiert in `flaecheNachfuehren`.
+        //
+        // Eine offene Insel dagegen noch einen Moment stehen lassen, bevor sie
+        // zugeht.
         AgentDienst.shared.freigabeVorbei = { [weak self] in
+            self?.notch.flaecheNachfuehren()
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
                 MainActor.assumeIsolated { self?.notch.klappeZuWennRuhig() }
             }
