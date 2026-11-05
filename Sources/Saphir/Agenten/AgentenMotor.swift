@@ -143,6 +143,20 @@ final class AgentenMotor: ObservableObject {
         refreshNotch()
     }
 
+    /// Wirft Sessions raus, deren Prozess nicht mehr laeuft. Gibt die Ids zurueck.
+    @discardableResult
+    func raeumeVerwaisteAuf() -> [String] {
+        var tot: [String] = []
+        for s in sessions {
+            guard let pid = s.origin.pid,
+                  ProzessPruefung.befund(pid: pid, seit: s.startedAt) == .tot else { continue }
+            Protokoll.info("Session \(s.displayName) (pid \(pid)) entfernt: Prozess laeuft nicht mehr")
+            tot.append(s.id)
+        }
+        for id in tot { removeSession(id) }
+        return tot
+    }
+
     func acknowledge(_ id: String) {
         guard let i = index(of: id) else { return }
         if sessions[i].state == .done || sessions[i].state == .failed {

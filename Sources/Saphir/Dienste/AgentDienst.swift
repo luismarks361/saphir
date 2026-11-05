@@ -159,6 +159,7 @@ final class AgentDienst: ObservableObject {
 
     private let motor = AgentenMotor.shared
     private var server: HTTPServer?
+    private var aufraeumTimer: Timer?
     private var letzteAnfrage: String?
     private var letzteSession: String?
     private var wartendeSessions: Set<String> = []
@@ -219,6 +220,10 @@ final class AgentDienst: ObservableObject {
         SessionIndex.startWatching { [weak self] in
             self?.motor.refreshTitles()
         }
+        aufraeumTimer?.invalidate()
+        aufraeumTimer = Timer.scheduledTimer(withTimeInterval: 5, repeats: true) { [weak self] _ in
+            MainActor.assumeIsolated { _ = self?.motor.raeumeVerwaisteAuf() }
+        }
         motor.rateLimits = RateLimits.load()
 
         // Verbunden heisst: der Nutzer hat es einmal gewollt. Dann bleibt das
@@ -238,6 +243,8 @@ final class AgentDienst: ObservableObject {
         laeuft = false
         port = 0
         SessionIndex.stopWatching()
+        aufraeumTimer?.invalidate()
+        aufraeumTimer = nil
         sessions = []
         kontingent = nil
         letzteAnfrage = nil
