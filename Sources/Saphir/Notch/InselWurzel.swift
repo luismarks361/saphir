@@ -47,12 +47,15 @@ struct InselWurzel: View {
         VStack(spacing: 0) {
             ZStack(alignment: .top) {
                 // Kein farbiger Schein an der Insel selbst: eingeklappt soll die
-                // Notch unberuehrt aussehen. Der Schein sitzt aufgeklappt hinter
-                // dem Cover (siehe MusikWidget).
+                // Notch unberuehrt aussehen. Der Schein kommt erst aufgeklappt,
+                // auf der Musik-Seite, unten links in der Ecke (siehe MusikSchein).
                 NotchForm(untenRadius: radius, kehle: kehle)
                     .fill(.black)
                     .inselSchatten(staerke: schattenStaerke)
                     .animation(InselBewegung.blende, value: schattenStaerke)
+
+                MusikSchein(zustand: zustand)
+                    .clipShape(NotchForm(untenRadius: radius, kehle: kehle))
 
                 // Die Kehle zieht den Koerper auf jeder Seite um `kehle` nach
                 // innen. Ohne die passende Polsterung landet der aeusserste

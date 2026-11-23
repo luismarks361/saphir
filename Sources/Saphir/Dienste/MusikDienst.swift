@@ -1,4 +1,5 @@
 import AppKit
+import Combine
 import SwiftUI
 
 /// Was gerade laeuft.
@@ -63,8 +64,14 @@ final class MusikDienst: ObservableObject {
     private var takt: Timer?
     private var coverFuer: String?
     private var coverLaeuft = false
+    private var scheinAbo: AnyCancellable?
 
     private init() {
+        // Der Schein in der Insel liest nur diesen Stand, nicht den Dienst.
+        scheinAbo = Publishers.CombineLatest($jetzt, $coverFarbe)
+            .sink { jetzt, farbe in
+                MusikScheinStand.shared.setze(jetzt == nil ? nil : farbe)
+            }
         NotificationCenter.default.addObserver(
             forName: .saphirFunktionGeaendert, object: nil, queue: .main
         ) { [weak self] _ in

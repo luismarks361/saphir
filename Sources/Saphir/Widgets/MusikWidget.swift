@@ -51,6 +51,50 @@ struct MusikWidget: View {
     }
 }
 
+/// Ein ganz leichter Schein in der Farbe des Covers, der unten links aus der
+/// Insel kommt. Er liegt hinter dem Inhalt und gehoert der ganzen Insel, nicht
+/// dem Widget: nur so reicht er bis in die Ecke. Zu sehen ist er nur, solange die
+/// Insel offen ist und die Musik-Seite zeigt — eingeklappt bleibt die Notch
+/// unberuehrt.
+///
+/// Die Farbe kommt nicht aus dem `MusikDienst` selbst, sondern aus einem eigenen
+/// kleinen Stand (`MusikScheinStand`). Der Dienst fragt bei seiner Erschaffung
+/// Spotify per AppleScript, und das laesst die Run-Loop weiterlaufen: mitten
+/// darin zeichnet sich die Insel, ihr Body fasste `MusikDienst.shared` wieder an
+/// und stuerzte an der eigenen Initialisierung ab.
+struct MusikSchein: View {
+    @ObservedObject var zustand: InselZustand
+    @ObservedObject private var stand = MusikScheinStand.shared
+
+    private var sichtbar: Bool {
+        zustand.istOffen && zustand.seite == .musik && stand.farbe != nil
+    }
+
+    var body: some View {
+        let farbe = stand.farbe ?? .clear
+        RadialGradient(
+            colors: [farbe.opacity(0.24), farbe.opacity(0.07), .clear],
+            center: .bottomLeading, startRadius: 0, endRadius: 280)
+            .opacity(sichtbar ? 1 : 0)
+            .animation(InselBewegung.blende, value: sichtbar)
+            .animation(.easeInOut(duration: 0.6), value: stand.farbe)
+            .allowsHitTesting(false)
+    }
+}
+
+/// Die Farbe des Scheins: die des Covers, solange ein Stueck laeuft, sonst keine.
+/// Beschrieben wird sie vom `MusikDienst`.
+@MainActor
+final class MusikScheinStand: ObservableObject {
+    static let shared = MusikScheinStand()
+    @Published private(set) var farbe: Color?
+    private init() {}
+
+    func setze(_ neu: Color?) {
+        if farbe != neu { farbe = neu }
+    }
+}
+
 /// Das Plus neben dem Titel — dasselbe wie das Plus in Spotify selbst.
 ///
 /// Steht nur da, wenn ein Spotify-Konto verbunden ist und wirklich ein Stueck
