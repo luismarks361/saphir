@@ -124,6 +124,9 @@ private struct AllgemeinSeite: View {
         Toggle("Insel oeffnet sich, wenn die Maus darueber faehrt", isOn: Binding(
             get: { e.beiHoverOeffnen }, set: { e.beiHoverOeffnen = $0 }))
 
+        Toggle("Symbol in der Menueleiste", isOn: Binding(
+            get: { e.menueleistenSymbol }, set: { e.menueleistenSymbol = $0 }))
+
         Toggle("Klaenge", isOn: Binding(get: { e.klaengeAn }, set: { e.klaengeAn = $0 }))
         Toggle("Haptik auf dem Trackpad", isOn: Binding(get: { e.haptikAn }, set: { e.haptikAn = $0 }))
 

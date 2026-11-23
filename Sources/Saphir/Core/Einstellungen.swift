@@ -172,7 +172,8 @@ final class Einstellungen: ObservableObject {
             "bildschirmWahl": BildschirmWahl.mitNotch.rawValue,
             "klaengeAn": true,
             "haptikAn": true,
-            "beiHoverOeffnen": true
+            "beiHoverOeffnen": true,
+            "menueleistenSymbol": true
         ]
         for f in Funktion.allCases {
             start["funktion.\(f.rawValue)"] = f.standardAn
@@ -203,6 +204,15 @@ final class Einstellungen: ObservableObject {
         set { defaults.set(newValue, forKey: "beiHoverOeffnen"); objectWillChange.send() }
     }
 
+    var menueleistenSymbol: Bool {
+        get { defaults.bool(forKey: "menueleistenSymbol") }
+        set {
+            defaults.set(newValue, forKey: "menueleistenSymbol")
+            objectWillChange.send()
+            NotificationCenter.default.post(name: .saphirMenueleistenSymbolGeaendert, object: nil)
+        }
+    }
+
     var bildschirmWahl: BildschirmWahl {
         get { BildschirmWahl(rawValue: defaults.string(forKey: "bildschirmWahl") ?? "") ?? .mitNotch }
         set { defaults.set(newValue.rawValue, forKey: "bildschirmWahl"); objectWillChange.send() }
@@ -224,4 +234,5 @@ final class Einstellungen: ObservableObject {
 
 extension Notification.Name {
     static let saphirFunktionGeaendert = Notification.Name("saphir.funktion.geaendert")
+    static let saphirMenueleistenSymbolGeaendert = Notification.Name("saphir.menueleistenSymbol.geaendert")
 }

@@ -9,6 +9,7 @@ final class MenueleisteController: NSObject, NSMenuDelegate {
     private let notch: NotchFenster
     private var wachAbo: AnyCancellable?
     private var deckelAbo: AnyCancellable?
+    private var symbolAbo: AnyCancellable?
 
     init(notch: NotchFenster) {
         self.notch = notch
@@ -16,6 +17,17 @@ final class MenueleisteController: NSObject, NSMenuDelegate {
         super.init()
 
         symbolSetzen(wach: false)
+
+        // Wer das Symbol nicht in der Leiste will, schaltet es in den
+        // Einstellungen ab; die Insel bleibt der Weg zu allem anderen.
+        item.isVisible = Einstellungen.shared.menueleistenSymbol
+        symbolAbo = NotificationCenter.default
+            .publisher(for: .saphirMenueleistenSymbolGeaendert)
+            .sink { [weak self] _ in
+                MainActor.assumeIsolated {
+                    self?.item.isVisible = Einstellungen.shared.menueleistenSymbol
+                }
+            }
 
         // Solange der Mac wach gehalten wird, sagt das Symbol es. In der Insel
         // steht es nicht immer: dort zeigt sich nur eine Sache zugleich, und
