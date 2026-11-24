@@ -155,7 +155,8 @@ final class MusikDienst: ObservableObject {
         end tell
         """
 
-        guard let roh = ausfuehren(skript), roh != "-" else { return nil }
+        // Dieses Skript laeuft jede Sekunde: einmal uebersetzen, dann wiederverwenden.
+        guard let roh = ausfuehren(skript, merken: true), roh != "-" else { return nil }
         let z = roh.components(separatedBy: "\n")
         guard z.count >= 6 else { return nil }
 
@@ -282,13 +283,18 @@ final class MusikDienst: ObservableObject {
 
     // MARK: - AppleScript
 
-    private func ausfuehren(_ quelltext: String) -> String? {
+    /// Mit `merken` bleibt das uebersetzte Skript fuer den naechsten Aufruf liegen.
+    /// Das ist nur fuer Skripte mit immer gleichem Text gedacht: Steuerbefehle mit
+    /// wechselndem Wert (Sprung auf eine Position) wuerden den Speicher fuellen.
+    private func ausfuehren(_ quelltext: String, merken: Bool = false) -> String? {
         var fehler: NSDictionary?
         // Ohne eigene Frist wartet ein Apple-Event 2 Minuten auf eine App, die
         // haengt oder eingefroren ist, und blockiert solange den Hauptthread.
         let begrenzt = "with timeout of 2 seconds\n\(quelltext)\nend timeout"
-        let ergebnis = NSAppleScript(source: begrenzt)?.executeAndReturnError(&fehler)
+        let skript = merken ? skripte.skript(fuer: begrenzt) : NSAppleScript(source: begrenzt)
+        let ergebnis = skript?.executeAndReturnError(&fehler)
         if let fehler {
+            if merken { skripte.vergiss(begrenzt) }
             let nr = fehler[NSAppleScript.errorNumber] as? Int ?? 0
             // -1743 = Automation nicht erlaubt. Einmal melden reicht, sonst
             // stuende das im Sekundentakt im Protokoll.
@@ -302,6 +308,7 @@ final class MusikDienst: ObservableObject {
     }
 
     private var automationGemeldet = false
+    private let skripte = SkriptSpeicher()
 
     // MARK: - Anzeige
 
