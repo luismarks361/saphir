@@ -168,6 +168,7 @@ enum WidgetSeite: String, CaseIterable, Identifiable {
     case kalender
     case zwischenablage
     case notizen
+    case system
     case zonen
     case einstellungen
 
@@ -188,6 +189,7 @@ enum WidgetSeite: String, CaseIterable, Identifiable {
             case .kalender: return Einstellungen.shared.istAn(.kalender)
             case .zwischenablage: return Einstellungen.shared.istAn(.zwischenablage)
             case .notizen: return Einstellungen.shared.istAn(.notizen)
+            case .system: return Einstellungen.shared.istAn(.system)
             case .zonen: return Einstellungen.shared.istAn(.snapZones)
             }
         }
@@ -202,6 +204,7 @@ enum WidgetSeite: String, CaseIterable, Identifiable {
         case .kalender: return "calendar"
         case .zwischenablage: return "doc.on.clipboard"
         case .notizen: return "note.text"
+        case .system: return "gauge.with.dots.needle.67percent"
         case .zonen: return "rectangle.split.2x2"
         case .einstellungen: return "gearshape"
         }
@@ -216,6 +219,7 @@ enum WidgetSeite: String, CaseIterable, Identifiable {
         case .kalender: return "Kalender"
         case .zwischenablage: return "Zwischenablage"
         case .notizen: return "Notizen"
+        case .system: return "System"
         case .zonen: return "Zonen"
         case .einstellungen: return "Einstellungen"
         }

@@ -28,6 +28,7 @@ enum Funktion: String, CaseIterable, Identifiable {
     case helligkeitsBoost
     case audioJeApp
     case batterie
+    case system
     case snapZones
     case dateiRegal
     case kalender
@@ -57,6 +58,7 @@ enum Funktion: String, CaseIterable, Identifiable {
         case .helligkeitsBoost: return "sun.max.fill"
         case .audioJeApp: return "hifispeaker"
         case .batterie: return "battery.100"
+        case .system: return "gauge.with.dots.needle.67percent"
         case .snapZones: return "rectangle.split.2x2"
         case .dateiRegal: return "tray.full"
         case .kalender: return "calendar"
@@ -85,6 +87,7 @@ enum Funktion: String, CaseIterable, Identifiable {
         case .helligkeitsBoost: return "Helligkeits-Boost"
         case .audioJeApp: return "Tonausgabe"
         case .batterie: return "Batterie"
+        case .system: return "System"
         case .snapZones: return "Snap-Zones"
         case .dateiRegal: return "Datei-Regal"
         case .kalender: return "Kalender"
@@ -113,6 +116,7 @@ enum Funktion: String, CaseIterable, Identifiable {
         case .helligkeitsBoost: return "Nutzt die XDR-Reserve fuer mehr als 100 Prozent."
         case .audioJeApp: return "Zwischen den Ausgabegeraeten wechseln."
         case .batterie: return "Ladestand, Zyklen und eine Ladegrenze gegen Alterung."
+        case .system: return "CPU, GPU, Arbeitsspeicher, Temperatur, Lüfter, Energie, Netz und Speicher live auf einer Seite."
         case .snapZones: return "Fenster an eigene Raster andocken."
         case .dateiRegal: return "Dateien in die Notch ziehen und spaeter herausholen."
         case .kalender: return "Naechste Termine, Warnung kurz vorher."
@@ -153,7 +157,7 @@ enum Funktion: String, CaseIterable, Identifiable {
         // Wetter bleibt aus: eingeschaltet wuerde es beim ersten Start nach den
         // Ortungsdiensten fragen.
         case .musik, .agenten, .lautstaerkeHud, .helligkeitHud, .caffeinate, .bluetooth,
-             .kalender, .batterie, .dateiRegal, .brille, .nachtmodus,
+             .kalender, .batterie, .system, .dateiRegal, .brille, .nachtmodus,
              .zwischenablage, .notizen, .augenpause, .audioJeApp:
             return true
         default:

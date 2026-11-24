@@ -21,6 +21,7 @@ AGPL-3.0.*
 | Spotify-Bibliothek | Plus neben dem Titel legt das Stück in die eigene Bibliothek (Einrichtung siehe unten) |
 | Datei-Regal | Dateien an die Notch ziehen, später wieder herausziehen |
 | Batterie | Mac plus jedes verbundene Gerät, AirPods mit links, rechts und Etui |
+| System | Eigener Reiter mit CPU (je Kern), GPU, Arbeitsspeicher, Temperatur, Lüfter, Leistung in Watt, Akku, Netz, SSD und Laufzeit, jede Sekunde frisch. Gemessen wird nur, solange der Reiter offen ist; ohne Root-Rechte |
 | Kalender | Nächste Termine, fünf Minuten vorher eine Meldung in der Insel |
 | Wach halten | Ruhezustand und Bildschirmabschaltung aussetzen, mit oder ohne Ende |
 | Anti-Blaulicht | Ab 18 Uhr an die Brille erinnern, ab 20 Uhr den Nachtmodus anbieten |

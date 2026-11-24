@@ -2,7 +2,7 @@
 # Insel von aussen auf- und zuklappen. Braucht keine Berechtigung.
 #   doku/steuern.sh auf | zu | einstellungen [bereich] | seite <name> | wach [minuten|aus] | deckel [minuten|aus] | brille | auge | nacht [an|aus|angebot] | freigabe [erlauben|ablehnen|immer] | agenten [verbinden|trennen|status] | bibliothek
 #
-# Seiten: start agenten musik regal kalender zwischenablage notizen zonen einstellungen
+# Seiten: start agenten musik regal kalender zwischenablage notizen system zonen einstellungen
 OBJ="nil"
 case "${1:-auf}" in
   auf)           N="com.luismarks.saphir.oeffnen" ;;

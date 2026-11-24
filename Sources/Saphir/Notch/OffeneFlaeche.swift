@@ -139,6 +139,8 @@ struct OffeneFlaeche: View {
             ZwischenablageWidget()
         case .notizen:
             NotizWidget()
+        case .system:
+            SystemSeite()
         case .zonen:
             ZonenWidget()
         case .einstellungen:
